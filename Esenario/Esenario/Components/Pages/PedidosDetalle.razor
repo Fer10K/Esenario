@@ -1,0 +1,69 @@
+@page "/pedidos/detalle/{Id:int}"
+@inject IRepositorioPedidos _repositorio
+@inject NavigationManager _navigator
+
+<h3>Detalle del Pedido</h3>
+
+@if (_pedido == null)
+{
+    <div class="spinner-border" role="status">
+        <span class="visually-hidden">Cargando...</span>
+    </div>
+}
+else
+{
+    <div class="mb-3">
+        <strong>Cliente:</strong> @_pedido.Cliente?.Nombre
+    </div>
+    <div class="mb-3">
+        <strong>Fecha:</strong> @_pedido.Fecha.ToString("dd/MM/yyyy")
+    </div>
+    <div class="mb-3">
+        <strong>Estado:</strong> @_pedido.Estado
+    </div>
+    <div class="mb-3">
+        <strong>Total:</strong> @_pedido.Total.ToString("C")
+    </div>
+
+    <h4>Productos</h4>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio Unitario</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (_pedido.Detalles != null)
+            {
+                @foreach (var detalle in _pedido.Detalles)
+                {
+                    <tr>
+                        <td>@detalle.Producto?.Nombre</td>
+                        <td>@detalle.Cantidad</td>
+                        <td>@detalle.Producto?.Precio.ToString("C")</td>
+                        <td>@detalle.Subtotal.ToString("C")</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+    <button class="btn btn-secondary" @onclick="Volver">Volver</button>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private Pedido? _pedido;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _pedido = await _repositorio.Get(Id);
+    }
+
+    private void Volver()
+    {
+        _navigator.NavigateTo("/pedidos");
+    }
+}

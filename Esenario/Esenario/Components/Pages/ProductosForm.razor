@@ -1,0 +1,73 @@
+﻿@page "/productos/nuevo"
+@page "/productos/editar/{Id:int}"
+@rendermode InteractiveServer
+@inject NavigationManager _navigator
+@inject IRepositorioProductos _repositorio
+
+<h2>@_mensaje Producto</h2>
+<EditForm Model="_producto" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+    <div class="mb-3">
+        <label>Nombre</label>
+        <InputText class="form-control" @bind-Value="_producto.Nombre" />
+        <ValidationMessage For="() => _producto.Nombre" />
+    </div>
+    <div class="mb-3">
+        <label>Precio</label>
+        <InputNumber class="form-control" @bind-Value="_producto.Precio" />
+        <ValidationMessage For="() => _producto.Precio" />
+    </div>
+    <div class="mb-3">
+        <label>Disponibilidad</label>
+        <InputCheckbox class="form-check-input" @bind-Value="_producto.Disponibilidad" />
+        <span class="ms-2">@(_producto.Disponibilidad ? "Activo" : "Inactivo")</span>
+    </div>
+    <div class="mb-3">
+        <label>Categoría</label>
+        <InputSelect class="form-control" @bind-Value="_producto.Categoria">
+            <option value="">Seleccione...</option>
+            <option value="bebida">Bebida</option>
+            <option value="postre">Postre</option>
+        </InputSelect>
+        <ValidationMessage For="() => _producto.Categoria" />
+    </div>
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <button class="btn btn-danger ms-3" @onclick="Cancelar" @onclick:preventDefault>Cancelar</button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    private string _mensaje = "";
+    private Producto _producto = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id > 0)
+        {
+            var prod = await _repositorio.Get(Id);
+            if (prod != null)
+                _producto = prod;
+            _mensaje = "Modificar";
+        }
+        else
+        {
+            _mensaje = "Nuevo";
+        }
+    }
+
+    private async Task Guardar()
+    {
+        if (Id > 0)
+            await _repositorio.UpDate(Id, _producto);
+        else
+            await _repositorio.Add(_producto);
+
+        Cancelar();
+    }
+
+    private void Cancelar()
+    {
+        _navigator.NavigateTo("/productos");
+    }
+}

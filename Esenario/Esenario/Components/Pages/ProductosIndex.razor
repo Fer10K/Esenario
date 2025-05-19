@@ -1,0 +1,74 @@
+﻿@page "/productos"
+@using Esenario.Modelo
+@rendermode InteractiveServer
+@inject IRepositorioProductos _repositorio
+@inject NavigationManager _navigator
+<h3>ProductosIndex</h3>
+<button class="btn btn-success mb-3" @onclick="Nuevo">Nuevo Producto</button>
+
+@if (_productos == null)
+{
+    <div class="spinner-border" role="status">
+        <span class="visually-hidden">Cargando...</span>
+    </div>
+}
+else if (_productos.Count == 0)
+{
+    <h3>No existen clientes</h3>
+}
+else
+{
+    <table class="table">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Precio</th>
+            <th>Disponibilidad</th>
+            <th>Categoría</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+            @foreach (var p in _productos)
+            {
+                <tr>
+                    <td>@p.Nombre</td>
+                    <td>@p.Precio</td>
+                    <td>@(p.Disponibilidad ? "Activo" : "Inactivo")</td>
+                    <td>@p.Categoria</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm" @onclick="() => Editar(p.Id_Producto)">Editar</button>
+                        <button class="btn btn-danger btn-sm ms-2" @onclick="() => Eliminar(p.Id_Producto)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+}
+
+@code {
+    private List<Producto>? _productos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _productos = await _repositorio.GetAll();
+    }
+
+    private void Nuevo()
+    {
+        _navigator.NavigateTo("/productos/nuevo");
+    }
+
+    private void Editar(int id)
+    {
+        _navigator.NavigateTo($"/productos/editar/{id}");
+    }
+
+    private async Task Eliminar(int id)
+    {
+        await _repositorio.Delete(id);
+        _productos = await _repositorio.GetAll();
+        StateHasChanged();
+    }
+}

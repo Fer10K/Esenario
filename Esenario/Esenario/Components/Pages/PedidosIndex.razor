@@ -1,0 +1,66 @@
+@page "/pedidos"
+@inject IRepositorioPedidos _repositorio
+@inject NavigationManager _navigator
+
+<h3>Pedidos</h3>
+<a class="btn btn-success mb-3" href="pedidos/nuevo">Nuevo pedido</a>
+
+@if (_pedidos == null)
+{
+    <div class="spinner-border" role="status">
+        <span class="visually-hidden">Cargando...</span>
+    </div>
+}
+else if (_pedidos.Count == 0)
+{
+    <h3>No existen pedidos</h3>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Cliente</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th>Total</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var pedido in _pedidos)
+            {
+                <tr>
+                    <td>@pedido.Cliente?.Nombre</td>
+                    <td>@pedido.Fecha.ToString("dd/MM/yyyy")</td>
+                    <td>@pedido.Estado</td>
+                    <td>@pedido.Total.ToString("C")</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm" @onclick="() => Editar(pedido.Id_Pedido)">Editar</button>
+                        <button class="btn btn-danger btn-sm ms-2" @onclick="() => Eliminar(pedido.Id_Pedido)">Eliminar</button>
+                        <button class="btn btn-info btn-sm ms-2" @onclick="() => VerDetalles(pedido.Id_Pedido)">Detalles</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Pedido>? _pedidos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _pedidos = await _repositorio.GetAll();
+    }
+
+    private void Editar(int id) => _navigator.NavigateTo($"/pedidos/editar/{id}");
+    private void VerDetalles(int id) => _navigator.NavigateTo($"/pedidos/detalle/{id}");
+
+    private async Task Eliminar(int id)
+    {
+        await _repositorio.Delete(id);
+        _pedidos = await _repositorio.GetAll();
+        StateHasChanged();
+    }
+}
