@@ -1,13 +1,12 @@
-using Esenario.Modelo;
-
+﻿using Esenario.Modelo;
 namespace Esenario.Repositorio
 {
     public interface IRepositorioPedidos
     {
-        Task<Pedido> Add(Pedido pedido);
-        Task UpDate(int id, Pedido pedido);
+        Task<Pedidos> Add(Pedidos pedido);
+        Task UpDate(int id, Pedidos pedido);
         Task Delete(int id);
-        Task<Pedido?> Get(int id);
-        Task<List<Pedido>> GetAll();
+        Task<Pedidos?> Get(int id);
+        Task<List<Pedidos>> GetAll();
     }
 }

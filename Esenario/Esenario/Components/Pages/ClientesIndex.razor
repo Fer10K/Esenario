@@ -1,0 +1,68 @@
+﻿@page "/clientes"
+@using Esenario.Modelo;
+@rendermode InteractiveServer
+@inject IRepositorioClientes _repositorio
+@inject NavigationManager _navigator
+<h3>Clientes</h3>
+<button class="btn btn-success mb-3" @onclick="Nuevo">Nuevo Cliente</button>
+
+@if (_clientes == null)
+{
+    <div class="spinner-border" role="status">
+        <span class="visually-hidden">Cargando...</span>
+    </div>
+}
+else if (_clientes.Count == 0)
+{
+    <h3>No existen clientes</h3>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Teléfono</th>
+                <th>Dirección</th>
+                <th>Correo</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in _clientes)
+            {
+                <tr>
+                    <td>@c.Nombre</td>
+                    <td>@c.Telefono</td>
+                    <td>@c.Direccion</td>
+                    <td>@c.Correo</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm" @onclick="() => Editar(c.Id_Cliente)">Editar</button>
+                        <button class="btn btn-danger btn-sm ms-2" @onclick="() => Eliminar(c.Id_Cliente)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+@code {
+    private List<Cliente>? _clientes;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _clientes = await _repositorio.GetAll();
+    }
+    private void Nuevo()
+    {
+        _navigator.NavigateTo("/clientes/nuevo");
+    }
+    private void Editar(int id)
+    {
+        _navigator.NavigateTo($"/clientes/editar/{id}");
+    }
+    private async Task Eliminar(int id)
+    {
+        await _repositorio.Delete(id);
+        _clientes = await _repositorio.GetAll();
+        StateHasChanged();
+    }
+}

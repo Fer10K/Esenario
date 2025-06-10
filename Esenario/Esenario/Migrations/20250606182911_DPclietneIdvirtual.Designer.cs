@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Esenario.Migrations
 {
     [DbContext(typeof(EsenarioDBContext))]
-    [Migration("20250519025259_QuitarPrecioUnitarioDelProducto")]
-    partial class QuitarPrecioUnitarioDelProducto
+    [Migration("20250606182911_DPclietneIdvirtual")]
+    partial class DPclietneIdvirtual
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,11 +27,11 @@ namespace Esenario.Migrations
 
             modelBuilder.Entity("Esenario.Modelo.Cliente", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("Id_Cliente")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_Cliente"));
 
                     b.Property<string>("Correo")
                         .IsRequired()
@@ -53,41 +53,12 @@ namespace Esenario.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id_Cliente");
 
                     b.ToTable("Clientes");
                 });
 
-            modelBuilder.Entity("Esenario.Modelo.Detalle_Pedido", b =>
-                {
-                    b.Property<int>("Id_Detalle")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_Detalle"));
-
-                    b.Property<int>("Cantidad")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Id_Pedido")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Id_Producto")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("Subtotal")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("Id_Detalle");
-
-                    b.HasIndex("Id_Pedido");
-
-                    b.HasIndex("Id_Producto");
-
-                    b.ToTable("Detalle_Pedidos");
-                });
-
-            modelBuilder.Entity("Esenario.Modelo.Pedido", b =>
+            modelBuilder.Entity("Esenario.Modelo.Pedidos", b =>
                 {
                     b.Property<int>("Id_Pedido")
                         .ValueGeneratedOnAdd()
@@ -95,23 +66,22 @@ namespace Esenario.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_Pedido"));
 
+                    b.Property<int>("ClienteId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Estado")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("Fecha")
+                    b.Property<DateTime>("Fecha_Pedido")
                         .HasColumnType("datetime2");
-
-                    b.Property<int>("Id_Cliente")
-                        .HasColumnType("int");
 
                     b.Property<decimal>("Total")
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id_Pedido");
 
-                    b.HasIndex("Id_Cliente");
+                    b.HasIndex("ClienteId");
 
                     b.ToTable("Pedidos");
                 });
@@ -126,16 +96,21 @@ namespace Esenario.Migrations
 
                     b.Property<string>("Categoria")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("Disponibilidad")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Nombre")
+                    b.Property<string>("Descripcion")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Disponible")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(15)
+                        .HasColumnType("nvarchar(15)");
 
                     b.Property<decimal>("Precio")
                         .HasColumnType("decimal(18,2)");
@@ -145,39 +120,15 @@ namespace Esenario.Migrations
                     b.ToTable("Productos");
                 });
 
-            modelBuilder.Entity("Esenario.Modelo.Detalle_Pedido", b =>
-                {
-                    b.HasOne("Esenario.Modelo.Pedido", "Pedido")
-                        .WithMany("Detalles")
-                        .HasForeignKey("Id_Pedido")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Esenario.Modelo.Producto", "Producto")
-                        .WithMany()
-                        .HasForeignKey("Id_Producto")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Pedido");
-
-                    b.Navigation("Producto");
-                });
-
-            modelBuilder.Entity("Esenario.Modelo.Pedido", b =>
+            modelBuilder.Entity("Esenario.Modelo.Pedidos", b =>
                 {
                     b.HasOne("Esenario.Modelo.Cliente", "Cliente")
                         .WithMany()
-                        .HasForeignKey("Id_Cliente")
+                        .HasForeignKey("ClienteId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Cliente");
-                });
-
-            modelBuilder.Entity("Esenario.Modelo.Pedido", b =>
-                {
-                    b.Navigation("Detalles");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,38 +1,32 @@
 ﻿@page "/clientes/nuevo"
 @page "/clientes/editar/{Id:int}"
+@using Esenario.Modelo;
 @rendermode InteractiveServer
-@inject NavigationManager _navigator;
-@inject IRepositorioClientes _repositorio;
-<h2>@_mensaje Cliente</h2>
-<EditForm Model="_cliente" FormName="frmCliente" OnValidSubmit="Guardar">
+@inject NavigationManager _navigator
+@inject IRepositorioClientes _repositorio
+<h3>@_mensaje Cliente</h3>
+
+<EditForm Model="_cliente" OnValidSubmit="Guardar">
     <DataAnnotationsValidator />
-    <div class="row mb-3">
-        <label for="txtNombre" class="col-2 col-form-label">Nombre</label>
-        <div class="col-10">
-            <InputText id="txtNombre" class="form-control" @bind-Value="_cliente.Nombre" />
-            <ValidationMessage For="() => _cliente.Nombre" />
-        </div>
+    <div class="mb-3">
+        <label>Nombre</label>
+        <InputText class="form-control" @bind-Value="_cliente.Nombre" />
+        <ValidationMessage For="() => _cliente.Nombre" />
     </div>
-    <div class="row mb-3">
-        <label for="txtCorreo" class="col-2 col-form-label">Correo</label>
-        <div class="col-10">
-            <InputText id="txtCorreo" class="form-control" @bind-Value="_cliente.Correo" />
-            <ValidationMessage For="() => _cliente.Correo" />
-        </div>
+    <div class="mb-3">
+        <label>Teléfono</label>
+        <InputText class="form-control" @bind-Value="_cliente.Telefono" />
+        <ValidationMessage For="() => _cliente.Telefono" />
     </div>
-    <div class="row mb-3">
-        <label for="txtTelefono" class="col-2 col-form-label">Teléfono</label>
-        <div class="col-10">
-            <InputText id="txtTelefono" class="form-control" @bind-Value="_cliente.Telefono" />
-            <ValidationMessage For="() => _cliente.Telefono" />
-        </div>
+    <div class="mb-3">
+        <label>Dirección</label>
+        <InputText class="form-control" @bind-Value="_cliente.Direccion" />
+        <ValidationMessage For="() => _cliente.Direccion" />
     </div>
-    <div class="row mb-3">
-        <label for="txtDireccion" class="col-2 col-form-label">Dirección</label>
-        <div class="col-10">
-            <InputText id="txtDireccion" class="form-control" @bind-Value="_cliente.Direccion" />
-            <ValidationMessage For="() => _cliente.Direccion" />
-        </div>
+    <div class="mb-3">
+        <label>Correo</label>
+        <InputText class="form-control" @bind-Value="_cliente.Correo" />
+        <ValidationMessage For="() => _cliente.Correo" />
     </div>
     <button type="submit" class="btn btn-primary">Guardar</button>
     <button class="btn btn-danger ms-3" @onclick="Cancelar" @onclick:preventDefault>Cancelar</button>
@@ -42,34 +36,34 @@
     [Parameter]
     public int Id { get; set; }
     private string _mensaje = "";
-    private Cliente? _cliente = new();
+    private Cliente _cliente = new();
 
     protected override async Task OnInitializedAsync()
     {
         if (Id > 0)
         {
-            _cliente = await _repositorio.Get(Id);
+            var cli = await _repositorio.Get(Id);
+            if (cli != null)
+                _cliente = cli;
             _mensaje = "Modificar";
         }
         else
         {
-            _mensaje = "Neva";
+            _mensaje = "Nuevo";
         }
     }
-
     private async Task Guardar()
     {
         if (Id > 0)
         {
-            await _repositorio.UpDate(Id, _cliente!);
+            await _repositorio.UpDate(Id, _cliente);
         }
         else
         {
-            await _repositorio.Add(_cliente!);
+            await _repositorio.Add(_cliente);
         }
         Cancelar();
     }
-
     private void Cancelar()
     {
         _navigator.NavigateTo("/clientes");

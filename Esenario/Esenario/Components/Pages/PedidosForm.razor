@@ -1,160 +1,74 @@
-@page "/pedidos/nuevo"
+ï»¿@page "/pedidos/nuevo"
 @page "/pedidos/editar/{Id:int}"
+@using Esenario.Modelo
 @rendermode InteractiveServer
-@inject IRepositorioPedidos _repositorio
-@inject IRepositorioClientes _clientesRepo
-@inject IRepositorioProductos _productosRepo
 @inject NavigationManager _navigator
+@inject IRepositorioPedidos _repositorio
+@inject IRepositorioClientes _repositorioClientes
+<h3>Nuevo Pedido</h3>
 
-<h2>@_mensaje Pedido</h2>
 <EditForm Model="_pedido" OnValidSubmit="Guardar">
-    <DataAnnotationsValidator />
+    <DataAnnotationsValidator/> 
     <div class="mb-3">
         <label>Cliente</label>
-        <InputSelect class="form-control" @bind-Value="_pedido.Id_Cliente">
-            <option value="">Seleccione...</option>
+        <InputSelect class="form-select" @bind-Value="_pedido.ClienteId" disabled="@_edicion">
+            <option value="0" enabled="enabled" >Seleccione un cliente</option>
             @foreach (var cliente in _clientes)
             {
-                <option value="@cliente.Id">@cliente.Nombre</option>
+                <option value="@cliente.Id_Cliente">@cliente.Nombre</option>
             }
         </InputSelect>
-        <ValidationMessage For="() => _pedido.Id_Cliente" />
+        <ValidationMessage For="() => _pedido.ClienteId" />
+        
     </div>
     <div class="mb-3">
-        <label>Fecha</label>
-        <InputDate class="form-control" @bind-Value="_pedido.Fecha" />
+        <label>Fecha del Pedido</label>
+        <InputDate class="form-control" @bind-Value="_pedido.Fecha_Pedido" />
+        <ValidationMessage For="() => _pedido.Fecha_Pedido" />
     </div>
     <div class="mb-3">
         <label>Estado</label>
-        <InputSelect class="form-control" @bind-Value="_pedido.Estado">
-            <option value="pendiente">Pendiente</option>
-            <option value="en preparación">En preparación</option>
-            <option value="entregado">Entregado</option>
-            <option value="cancelado">Cancelado</option>
+        <InputSelect class="form-select" @bind-Value="_pedido.Estado" placeholder="Seleccione un cliente">
+            <option value="Pendiente">Pendiente</option>
+            <option value="Entregado">Entregado</option>
         </InputSelect>
+        <ValidationMessage For="() => _pedido.Estado" />
     </div>
-
-    <h4>Detalles del pedido</h4>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Producto</th>
-                <th>Cantidad</th>
-                <th>Subtotal</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var detalle in _detalles)
-            {
-                <tr>
-                    <td>
-                        <InputSelect class="form-control" @bind-Value="detalle.Id_Producto" @onchange="(e) => ActualizarProducto(detalle)">
-                            <option value="">Seleccione...</option>
-                            @foreach (var prod in _productos)
-                            {
-                                <option value="@prod.Id_Producto">@prod.Nombre</option>
-                            }
-                        </InputSelect>
-                    </td>
-                    <td>
-                        <InputNumber class="form-control" @bind-Value="detalle.Cantidad" @oninput="(e) => ActualizarSubtotal(detalle)" />
-                    </td>
-                    <td>@detalle.Subtotal.ToString("C")</td>
-                    <td>
-                        <button class="btn btn-danger btn-sm" @onclick="() => QuitarDetalle(detalle)">Quitar</button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-    <button class="btn btn-secondary mb-3" type="button" @onclick="AgregarDetalle">Agregar producto</button>
-
-    <div class="mb-3">
-        <label>Total: </label>
-        <span>@_pedido.Total.ToString("C")</span>
-    </div>
-
     <button type="submit" class="btn btn-primary">Guardar</button>
     <button class="btn btn-danger ms-3" @onclick="Cancelar" @onclick:preventDefault>Cancelar</button>
 </EditForm>
 
 @code {
-    [Parameter] public int Id { get; set; }
-    private string _mensaje = "";
-    private Pedido _pedido = new();
-    private List<Detalle_Pedido> _detalles = new();
     private List<Cliente> _clientes = new();
-    private List<Producto> _productos = new();
+    [Parameter]
+    public int Id { get; set; }
+    private Pedidos _pedido = new();
+    private bool _edicion => Id > 0;
 
     protected override async Task OnInitializedAsync()
     {
-        _clientes = await _clientesRepo.GetAll();
-        _productos = await _productosRepo.GetAll();
-
         if (Id > 0)
         {
-            _pedido = await _repositorio.Get(Id) ?? new Pedido();
-            _detalles = _pedido.Detalles?.ToList() ?? new List<Detalle_Pedido>();
-            _mensaje = "Modificar";
+            var pedido = await _repositorio.Get(Id);
+            if (pedido != null)
+                _pedido = pedido;
         }
-        else
-        {
-            _pedido.Fecha = DateTime.Now;
-            _pedido.Estado = "pendiente";
-            _detalles = new List<Detalle_Pedido>();
-            _mensaje = "Nuevo";
-        }
-        CalcularTotal();
-    }
-
-    private void AgregarDetalle()
-    {
-        _detalles.Add(new Detalle_Pedido { Cantidad = 1 });
-    }
-
-    private void QuitarDetalle(Detalle_Pedido detalle)
-    {
-        _detalles.Remove(detalle);
-        CalcularTotal();
-    }
-
-    private void ActualizarProducto(Detalle_Pedido detalle)
-    {
-        var producto = _productos.FirstOrDefault(p => p.Id_Producto == detalle.Id_Producto);
-        if (producto != null)
-        {
-            detalle.Subtotal = producto.Precio * detalle.Cantidad;
-            CalcularTotal();
-        }
-    }
-
-    private void ActualizarSubtotal(Detalle_Pedido detalle)
-    {
-        var producto = _productos.FirstOrDefault(p => p.Id_Producto == detalle.Id_Producto);
-        if (producto != null)
-        {
-            detalle.Subtotal = producto.Precio * detalle.Cantidad;
-            CalcularTotal();
-        }
-    }
-
-    private void CalcularTotal()
-    {
-        _pedido.Total = _detalles.Sum(d => d.Subtotal);
+        var clientes = await _repositorioClientes.GetAll();
+        _clientes = clientes;
     }
 
     private async Task Guardar()
     {
-        _pedido.Detalles = _detalles;
-        if (Id > 0)
+        if (_edicion)
+        {
             await _repositorio.UpDate(Id, _pedido);
+        }
         else
+        {
             await _repositorio.Add(_pedido);
-
-        Cancelar();
+        }
+        _navigator.NavigateTo("/pedidos");
     }
-
     private void Cancelar()
     {
         _navigator.NavigateTo("/pedidos");

@@ -9,10 +9,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddDbContext<EsenarioDBContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddScoped<IRepositorioClientes, RepositorioClientes>();
 builder.Services.AddScoped<IRepositorioProductos, RepositorioProductos>();
+builder.Services.AddScoped<IRepositorioClientes, RepositorioClientes>();
 builder.Services.AddScoped<IRepositorioPedidos, RepositorioPedidos>();
-builder.Services.AddScoped<IRepositorioDetallePedidos, RepositorioDetallePedidos>();
+builder.Services.AddScoped<IRepositorioDetallePedido, RepositorioDetallePedido>();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();

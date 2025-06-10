@@ -1,0 +1,126 @@
+﻿@page "/consultas"
+@rendermode InteractiveServer
+@using Esenario.Modelo
+@inject NavigationManager _navigator
+@inject IRepositorioClientes _repositorioClientes
+@inject IRepositorioPedidos _repositorioPedidos
+@inject IRepositorioDetallePedido _repositorioDetallePedido
+@inject IRepositorioProductos _repositorioProductos
+
+<h3>Consultas</h3>
+<h4>Resumen diario de pedidos</h4>
+@if (resumenDiario != null)
+{
+    <ul>
+        <li>Cantidad de pedidos: <b>@resumenDiario.CantidadPedidos</b></li>
+        <li>Total vendido: <b>@resumenDiario.TotalVendido.ToString("C")</b></li>
+    </ul>
+}
+
+<h4>Pedidos por cliente</h4>
+@if (pedidosPorCliente?.Any() == true)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Cliente</th>
+                <th>Cantidad de pedidos</th>
+                <th>Total gastado</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in pedidosPorCliente)
+            {
+                <tr>
+                    <td>@c.Nombre</td>
+                    <td>@c.CantidadPedidos</td>
+                    <td>@c.TotalGastado.ToString("C")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<h4>Pedidos activos</h4>
+@if (pedidosActivos?.Any() == true)
+{
+    <ul>
+        @foreach (var p in pedidosActivos)
+        {
+            <li>Pedido #@p.Id_Pedido - Cliente: @p.Cliente?.Nombre - Estado: @p.Estado</li>
+        }
+    </ul>
+}
+
+@code {
+    private ResumenDiario? resumenDiario;
+    private List<ClienteResumen>? pedidosPorCliente;
+    private List<Pedidos>? pedidosActivos;
+    private List<Pedidos>? todosLosPedidos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        todosLosPedidos = await _repositorioPedidos.GetAll();
+        await CargarResumenDiario();
+        await CargarPedidosPorCliente();
+        await CargarPedidosActivos();
+    }
+
+    private async Task CargarResumenDiario()
+    {
+        var fechaResumen = DateTime.Today;
+
+        if (todosLosPedidos == null)
+            todosLosPedidos = await _repositorioPedidos.GetAll();
+
+        var pedidosDelDia = todosLosPedidos
+            .Where(p => p.Fecha_Pedido.Date == fechaResumen.Date)
+            .ToList();
+
+        resumenDiario = new ResumenDiario
+        {
+            CantidadPedidos = pedidosDelDia.Count,
+            TotalVendido = pedidosDelDia.Where(p => p.Estado == "Entregado").Sum(p => p.Total),
+        };
+    }
+
+    private async Task CargarPedidosPorCliente()
+    {
+        if (todosLosPedidos == null)
+            todosLosPedidos = await _repositorioPedidos.GetAll();
+
+        pedidosPorCliente = todosLosPedidos
+            .GroupBy(p => p.Cliente?.Nombre)
+            .Select(g => new ClienteResumen
+            {
+                Nombre = g.Key ?? "",
+                CantidadPedidos = g.Count(),
+                TotalGastado = g.Sum(x => x.Total)
+            })
+            .OrderByDescending(x => x.CantidadPedidos)
+            .ToList();
+    }
+
+    private async Task CargarPedidosActivos()
+    {
+        if (todosLosPedidos == null)
+            todosLosPedidos = await _repositorioPedidos.GetAll();
+
+        pedidosActivos = todosLosPedidos
+            .Where(p => p.Estado == "Pendiente")
+            .OrderByDescending(p => p.Fecha_Pedido)
+            .ToList();
+    }
+
+    public class ResumenDiario
+    {
+        public int CantidadPedidos { get; set; }
+        public decimal TotalVendido { get; set; }
+    }
+    public class ClienteResumen
+    {
+        public string Nombre { get; set; } = "";
+        public int CantidadPedidos { get; set; }
+        public decimal TotalGastado { get; set; }
+    }
+}

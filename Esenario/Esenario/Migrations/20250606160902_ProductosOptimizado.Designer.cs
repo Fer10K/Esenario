@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Esenario.Migrations
 {
     [DbContext(typeof(EsenarioDBContext))]
-    [Migration("20250518214731_Inicial")]
-    partial class Inicial
+    [Migration("20250606160902_ProductosOptimizado")]
+    partial class ProductosOptimizado
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -26,11 +26,11 @@ namespace Esenario.Migrations
 
             modelBuilder.Entity("Esenario.Modelo.Cliente", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("Id_Cliente")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_Cliente"));
 
                     b.Property<string>("Correo")
                         .IsRequired()
@@ -52,9 +52,41 @@ namespace Esenario.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id_Cliente");
 
                     b.ToTable("Clientes");
+                });
+
+            modelBuilder.Entity("Esenario.Modelo.Producto", b =>
+                {
+                    b.Property<int>("IdProducto")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdProducto"));
+
+                    b.Property<int>("Categoria")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Descripcion")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("Disponible")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(15)
+                        .HasColumnType("nvarchar(15)");
+
+                    b.Property<decimal>("Precio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("IdProducto");
+
+                    b.ToTable("Productos");
                 });
 #pragma warning restore 612, 618
         }

@@ -4,6 +4,7 @@ using Esenario.Modelo;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Esenario.Migrations
 {
     [DbContext(typeof(EsenarioDBContext))]
-    partial class EsenarioDBContextModelSnapshot : ModelSnapshot
+    [Migration("20250606165914_Pedidos")]
+    partial class Pedidos
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,35 +24,6 @@ namespace Esenario.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("DetallePedido", b =>
-                {
-                    b.Property<int>("IdDetalle")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdDetalle"));
-
-                    b.Property<int>("Cantidad")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PedidoId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProductoId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("Subtotal")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("IdDetalle");
-
-                    b.HasIndex("PedidoId");
-
-                    b.HasIndex("ProductoId");
-
-                    b.ToTable("DetallePedidos");
-                });
 
             modelBuilder.Entity("Esenario.Modelo.Cliente", b =>
                 {
@@ -92,7 +66,7 @@ namespace Esenario.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_Pedido"));
 
-                    b.Property<int>("ClienteId")
+                    b.Property<int>("ClienteId_Cliente")
                         .HasColumnType("int");
 
                     b.Property<string>("Estado")
@@ -102,12 +76,15 @@ namespace Esenario.Migrations
                     b.Property<DateTime>("Fecha_Pedido")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("Id_Cliente")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("Total")
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id_Pedido");
 
-                    b.HasIndex("ClienteId");
+                    b.HasIndex("ClienteId_Cliente");
 
                     b.ToTable("Pedidos");
                 });
@@ -146,44 +123,15 @@ namespace Esenario.Migrations
                     b.ToTable("Productos");
                 });
 
-            modelBuilder.Entity("DetallePedido", b =>
-                {
-                    b.HasOne("Esenario.Modelo.Pedidos", "Pedido")
-                        .WithMany("Detalles")
-                        .HasForeignKey("PedidoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Esenario.Modelo.Producto", "Producto")
-                        .WithMany("Detalles")
-                        .HasForeignKey("ProductoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Pedido");
-
-                    b.Navigation("Producto");
-                });
-
             modelBuilder.Entity("Esenario.Modelo.Pedidos", b =>
                 {
                     b.HasOne("Esenario.Modelo.Cliente", "Cliente")
                         .WithMany()
-                        .HasForeignKey("ClienteId")
+                        .HasForeignKey("ClienteId_Cliente")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Cliente");
-                });
-
-            modelBuilder.Entity("Esenario.Modelo.Pedidos", b =>
-                {
-                    b.Navigation("Detalles");
-                });
-
-            modelBuilder.Entity("Esenario.Modelo.Producto", b =>
-                {
-                    b.Navigation("Detalles");
                 });
 #pragma warning restore 612, 618
         }

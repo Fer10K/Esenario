@@ -25,8 +25,9 @@ namespace Esenario.Repositorio
             if (actual != null)
             {
                 actual.Nombre = producto.Nombre;
+                actual.Descripcion = producto.Descripcion;
                 actual.Precio = producto.Precio;
-                actual.Disponibilidad = producto.Disponibilidad;
+                actual.Disponible = producto.Disponible;
                 actual.Categoria = producto.Categoria;
                 await _context.SaveChangesAsync();
             }

@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Esenario.Migrations
 {
     [DbContext(typeof(EsenarioDBContext))]
-    [Migration("20250519010627_CrearTablaProductos")]
-    partial class CrearTablaProductos
+    [Migration("20250606161841_ProductosOp")]
+    partial class ProductosOp
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -26,11 +26,11 @@ namespace Esenario.Migrations
 
             modelBuilder.Entity("Esenario.Modelo.Cliente", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("Id_Cliente")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_Cliente"));
 
                     b.Property<string>("Correo")
                         .IsRequired()
@@ -52,7 +52,7 @@ namespace Esenario.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id_Cliente");
 
                     b.ToTable("Clientes");
                 });
@@ -65,18 +65,21 @@ namespace Esenario.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_Producto"));
 
-                    b.Property<string>("Categoria")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<int>("Categoria")
+                        .HasColumnType("int");
 
-                    b.Property<bool>("Disponibilidad")
+                    b.Property<string>("Descripcion")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("Disponible")
                         .HasColumnType("bit");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(15)
+                        .HasColumnType("nvarchar(15)");
 
                     b.Property<decimal>("Precio")
                         .HasColumnType("decimal(18,2)");

@@ -1,0 +1,94 @@
+﻿@page "/detallepedido/{PedidoId:int}"
+@rendermode InteractiveServer
+@using Esenario.Modelo
+@inject NavigationManager NavigationManager
+@inject IRepositorioDetallePedido _repositorio
+@inject IRepositorioProductos _repositorioProductos
+
+<h3>Detalle del Pedido @PedidoId</h3>
+
+@if (_detalles == null)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Precio</th>
+                <th>Cantidad</th>
+                <th>Subtotal</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var d in _detalles)
+            {
+                <tr>
+                    <td>@d.Producto?.Nombre</td>
+                    <td>@d.Producto?.Precio</td>
+                    <td>@d.Cantidad</td>
+                    <td>@d.Subtotal</td>
+                    <td>
+                        <button class="btn btn-danger" @onclick="() => Eliminar(d.IdDetalle)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h4>Total: @totalPedido.ToString("C")</h4>
+    <button class="btn btn-danger" @onclick="() => Volver()">Volver</button>
+}
+    <h5>Agregar producto</h5>
+    <select class="form-control"  @bind="_nuevo">
+        <option value="">Selecciona un producto</option>
+        @foreach (var p in _productos)
+        {
+            <option value="@p.Id_Producto">@p.Nombre</option>
+        }
+    </select>
+
+    <input type="number" @bind="cantidad" placeholder="Cantidad" class="form-control" />
+    <button class="btn btn-primary" @onclick="Agregar">Agregar producto</button>
+
+@code{
+    [Parameter]
+    public int PedidoId { get; set; }
+    private List<DetallePedido> _detalles = new();
+    private decimal totalPedido = 0;
+    private int _nuevo;
+    private List<Producto> _productos = new();
+    private int cantidad = 1;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _detalles = await _repositorio.GetByPedidoId(PedidoId);
+        totalPedido = _detalles.Sum(d => d.Subtotal);
+        _productos = await _repositorioProductos.GetAll();
+        _productos = _productos.Where(p => p.Disponible == "Disponible").ToList();
+    }
+    private async Task Eliminar(int idDetalle)
+    {
+        await _repositorio.Delete(idDetalle);
+        _detalles = await _repositorio.GetByPedidoId(PedidoId);
+        totalPedido = _detalles.Sum(d => d.Subtotal);
+    }
+    private void Volver()
+    {
+        NavigationManager.NavigateTo("/pedidos");
+    }
+    private async Task Agregar()
+    {
+        if (_nuevo > 0 && cantidad > 0)
+        {
+            await _repositorio.Add(PedidoId, _nuevo, cantidad);
+            _detalles = await _repositorio.GetByPedidoId(PedidoId);
+            totalPedido = _detalles.Sum(d => d.Subtotal);
+            _nuevo = 0;
+            cantidad = 1;
+        }
+    }
+}

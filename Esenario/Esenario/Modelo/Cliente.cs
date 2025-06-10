@@ -4,19 +4,23 @@ namespace Esenario.Modelo
 {
     public class Cliente
     {
-        public int Id { get; set; }
-        [Required(ErrorMessage = "El nombre es requerido")]
-        [StringLength(100, ErrorMessage = "Maximo 100 caracteres")]
-        public string? Nombre { get; set; }
-        [Required(ErrorMessage ="El telefono es requerido")]
-        [StringLength(10, ErrorMessage ="Maximo 10 caracteres")]
-        public string? Telefono { get; set; }
-        [Required(ErrorMessage ="La direccion es requerida")]
-        [StringLength(100, ErrorMessage ="Maximo 100 caracteres")]
-        public string? Direccion { get; set; }
-        [Required(ErrorMessage ="El correo es requerido")]
-        [EmailAddress(ErrorMessage ="Debe ser un correo válido")]
-        [StringLength(100, ErrorMessage ="Maximo 100 caracteres")]
-        public string? Correo { get; set; }
+        [Key]
+        public int Id_Cliente { get; set; }
+
+        [Required]
+        [StringLength(100, ErrorMessage = "El nombre es requerido y máximo 100 caracteres")]
+        public string Nombre { get; set; } = "";
+
+        [Required]
+        [StringLength(10, ErrorMessage = "El Teléfono es requerido y máximo 10 caracteres")]
+        public string Telefono { get; set; } = string.Empty;
+
+        [Required]
+        [StringLength(100, ErrorMessage = "La dirección es requerida y máximo 100 caracteres")]
+        public string Direccion { get; set; } = string.Empty;
+
+        [Required]
+        [StringLength(100, ErrorMessage = "El correo es requerido y máximo 100 caracteres")]
+        public string Correo { get; set; } = string.Empty;
     }
 }

@@ -1,44 +1,45 @@
-@page "/pedidos"
+﻿@page "/pedidos"
+@using Esenario.Modelo
+@rendermode InteractiveServer
 @inject IRepositorioPedidos _repositorio
 @inject NavigationManager _navigator
-
 <h3>Pedidos</h3>
-<a class="btn btn-success mb-3" href="pedidos/nuevo">Nuevo pedido</a>
+<button class="btn btn-success mb-3" @onclick="Nuevo">Nuevo Pedido</button>
 
-@if (_pedidos == null)
+
+@if(_pedidos == null)
 {
     <div class="spinner-border" role="status">
         <span class="visually-hidden">Cargando...</span>
     </div>
-}
-else if (_pedidos.Count == 0)
+}else if(_pedidos.Count == 0)
 {
     <h3>No existen pedidos</h3>
 }
 else
 {
-    <table class="table table-striped">
+    <table class="table">
         <thead>
             <tr>
                 <th>Cliente</th>
                 <th>Fecha</th>
-                <th>Estado</th>
                 <th>Total</th>
+                <th>Estado</th>
                 <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var pedido in _pedidos)
+            @foreach (var p in _pedidos)
             {
                 <tr>
-                    <td>@pedido.Cliente?.Nombre</td>
-                    <td>@pedido.Fecha.ToString("dd/MM/yyyy")</td>
-                    <td>@pedido.Estado</td>
-                    <td>@pedido.Total.ToString("C")</td>
+                    <td>@p.Cliente?.Nombre</td>
+                    <td>@p.Fecha_Pedido.ToShortDateString()</td>
+                    <td>@p.Total.ToString("C")</td>
+                    <td>@p.Estado</td>
                     <td>
-                        <button class="btn btn-primary btn-sm" @onclick="() => Editar(pedido.Id_Pedido)">Editar</button>
-                        <button class="btn btn-danger btn-sm ms-2" @onclick="() => Eliminar(pedido.Id_Pedido)">Eliminar</button>
-                        <button class="btn btn-info btn-sm ms-2" @onclick="() => VerDetalles(pedido.Id_Pedido)">Detalles</button>
+                        <button class="btn btn-danger btn-sm ms-2" @onclick="() => Eliminar(p.Id_Pedido)">Eliminar</button>
+                        <button class="btn btn-primary btn-sm" @onclick="() => VerPedido(p.Id_Pedido)">Ver pedido</button>
+                        <button class="btn btn-primary btn-sm" @onclick="() => Editar(p.Id_Pedido)">Editar</button>
                     </td>
                 </tr>
             }
@@ -47,20 +48,27 @@ else
 }
 
 @code {
-    private List<Pedido>? _pedidos;
-
-    protected override async Task OnInitializedAsync()
-    {
+    private List<Pedidos>? _pedidos;
+    protected override async Task OnInitializedAsync() {
         _pedidos = await _repositorio.GetAll();
+        _pedidos = _pedidos.OrderBy(p => p.Estado != "Pendiente").ThenByDescending(p => p.Fecha_Pedido).ToList();
     }
-
-    private void Editar(int id) => _navigator.NavigateTo($"/pedidos/editar/{id}");
-    private void VerDetalles(int id) => _navigator.NavigateTo($"/pedidos/detalle/{id}");
-
+    private void Nuevo() {
+        _navigator.NavigateTo("/pedidos/nuevo");
+    }
     private async Task Eliminar(int id)
     {
         await _repositorio.Delete(id);
         _pedidos = await _repositorio.GetAll();
+        _pedidos = _pedidos.OrderBy(p => p.Estado != "Pendiente").ThenByDescending(p => p.Fecha_Pedido).ToList();
         StateHasChanged();
+    }
+    private void VerPedido(int id)
+    {
+        _navigator.NavigateTo($"/detallepedido/{id}");
+    }
+    private void Editar(int id)
+    {
+        _navigator.NavigateTo($"/pedidos/editar/{id}");
     }
 }
